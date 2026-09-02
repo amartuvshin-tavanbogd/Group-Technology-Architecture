@@ -1,1 +1,0 @@
-# Group-Technology-Architecture

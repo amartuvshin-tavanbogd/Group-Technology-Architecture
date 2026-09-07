@@ -230,7 +230,7 @@ body.overview .patleg{display:none}
 .node .co em .mark{width:14px;height:14px;font-size:7px;border-radius:3px}
 #d-co button{display:inline-flex;align-items:center;gap:6px}
 
-/* ---------- нүүлгэлт ба DR ---------- */
+/* ---------- шилжилт ба DR ---------- */
 .node .mv{display:none;position:absolute;top:5px;right:6px;font-family:Manrope,sans-serif;
   font-weight:800;font-size:8px;letter-spacing:.03em;color:#1F6FEB;
   border:1px solid #9CC0F0;border-radius:3px;padding:0 3px;background:#EDF4FE}
@@ -294,6 +294,44 @@ h1{font-size:clamp(17px,1.85vw,24px);letter-spacing:-.02em}
 .solo .g3{padding-top:0}
 .col .body > .solo:first-child{border-top:0;margin-top:0}
 
+/* ===== нүдний статус ===== */
+.node .stt{display:none;font-family:Manrope,sans-serif;font-weight:700;font-size:8.5px;
+  letter-spacing:.03em;border:1px dashed;border-radius:3px;padding:1px 5px;margin-top:6px}
+.node.st-planned .stt,.node.st-partial .stt,.node.st-tbd .stt{display:inline-block}
+.node.st-planned .stt{color:#5F45B8;border-color:#B9A8E4;background:#F3F0FC}
+.node.st-partial .stt{color:#8A5A00;border-color:#E5C07B;background:#FFF6E5}
+.node.st-tbd .stt{color:#5A6672;border-color:#C3CCD4;background:#F2F5F7}
+body.overview .node .stt{display:none}
+
+/* ===== зорилтот төлөвт шинээр ирж буй нүд ===== */
+body.tgt .node.moved:not(.merged):not([aria-current="true"]){
+  background:#EEF6E6;border-left-color:#3B6D11}
+body.tgt .node.moved:not(.merged):not([aria-current="true"]):not(.rel){
+  box-shadow:inset 0 0 0 1px #9CC489}
+body.tgt .node.moved:not(.merged) .mv{
+  color:#3B6D11;border-color:#9CC489;background:#EAF3DE}
+
+body.tgt .node.merged:not([aria-current="true"]){
+  background:#F4F1FC;border-left-color:#5F45B8}
+body.tgt .node.merged:not([aria-current="true"]):not(.rel){
+  box-shadow:inset 0 0 0 1px #C3B6E8}
+
+/* ===== зорилтот төлөвийн шилжилт ===== */
+.node.dest-tbd .mv{color:#8A5A00;border-color:#E5C07B;background:#FFF6E5}
+.node.merged .mv{color:#5F45B8;border-color:#C3B6E8;background:#EFEBFB}
+.meta b.tbd{color:#8A5A00}
+
+/* ===== багананд нүд хайчлагдахаас сэргийлэх ===== */
+/* grid item-ийн анхны min-width:auto нь урт нэрийг багананаас гаргаж,
+   .col{overflow:hidden} түүнийг таслаж байсан */
+.g3 > *,.pods > *{min-width:0}
+.node b,.node small{overflow-wrap:anywhere}
+
+/* Зорилтот төлөвт AWS багана 8 нүдээр дүүрч, ДЦ хоосордог тул
+   өргөний харьцааг тэнцвэржүүлнэ (том дэлгэцэнд) */
+@media (min-width:1081px){
+  body.tgt .cols{grid-template-columns:1.3fr 78px 1.4fr 78px 0.85fr}
+}
 </style>
 </head>
 <body class="overview">
@@ -345,6 +383,7 @@ h1{font-size:clamp(17px,1.85vw,24px);letter-spacing:-.02em}
   <span data-tx="foot4"></span>
   <span data-tx="foot5"></span>
   <span data-tx="foot6"></span>
+  <span data-tx="foot_st"></span>
   <span data-tx="foot7" style="margin-left:auto"></span>
 </div>
 </div>
@@ -377,7 +416,7 @@ const L2 = s => {
 };
 
 const TX = {
-  ver:       "Хувилбар 1|Version 1",
+  ver:       "Хувилбар 2|Version 2",
   h1:        "Группын технологийн архитектур — 2026|Group Technology Architecture — 2026",
   sub_app:   "аппликейшн|applications",
   sub_site:  "гурван байршил|three locations",
@@ -401,7 +440,7 @@ const TX = {
   foot3:     "Компанийн нэр дарж түүний системүүдийг харна|Click a company to see its systems",
   foot4:     "Integration давхаргын өнгө = pattern|Integration layer colour = pattern",
   foot5:     "Тасархай + зураастай = зорилтот төлөвт хаагдана|Dashed + struck = sunset in target state",
-  foot6:     "→AWS = зорилтот төлөвт AWS руу нүүнэ|→AWS = moves to AWS in target state",
+  foot6:     "Ногоон = зорилтот төлөвт энэ байрлалд шинээр ирнэ · Ягаан = нэгдэж орж ирнэ|Green = arrives here in the target state · Purple = merges in",
   foot7:     "Лого байхгүй 2 компани үсгэн тэмдэгтэй|2 companies without a logo use letter marks",
   d_close:   "Хаах|Close",
   d_co:      "Ашиглаж байгаа компаниуд|Companies using it",
@@ -418,11 +457,22 @@ const TX = {
   d_site:    "Байршил|Location",
   d_acct:    "AWS account|AWS account",
   d_moving:  "Зорилтот төлөв|Target state",
-  d_move_v:  "AWS руу нүүнэ (санал)|Moves to AWS (proposed)",
+  d_move_v:  "AWS руу шилжинэ (санал)|Moves to AWS (proposed)",
   d_tbd:     "Тодруулах шаардлагатай|To be confirmed",
   d_co_tbd:  "Хэрэглэгч компани тодруулах|Owning company to be confirmed",
   d_nolayer: "Интеграцийн давхарга — компанид бус, платформд үйлчилнэ.|Integration layer — serves the platform, not a single company.",
   d_sunset:  "Зорилтот төлөвт хэрэглэгч компани байхгүй — хаагдана.|No company uses it in the target state — sunset.",
+  d_status:   "Статус|Status",
+  st_planned: "ТӨЛӨВЛӨСӨН — одоо байхгүй|PLANNED — not in place",
+  st_partial: "ХЭСЭГЧЛЭН хэрэгжсэн|PARTIALLY in place",
+  st_tbd:     "БАТАЛГААЖААГҮЙ|UNVERIFIED",
+  foot_st:    "Тасархай тэмдэг = одоо байхгүй эсвэл баталгаажаагүй|Dashed tag = not in place or unverified",
+  d_mig:      "Шилжилт|Migration",
+  d_migkind:  "Өөрчлөлтийн төрөл|Change type",
+  d_wave:     "Хугацаа|Timing",
+  mg_move:    "Шилжинэ|Migrates",
+  mg_merge:   "Нэгдэнэ|Merges",
+  mg_tbd:     "AWS — account тодруулах|AWS — account TBD",
   d_allplat: "Энэ давхарга бүх платформд нэгэн зэрэг үйлчилнэ.|This layer serves all platforms at once.",
   l_legend:  "service · pattern-аар өнгөтэй|services · coloured by pattern",
   l_all:     "бүх платформд нэгэн зэрэг|spans all platforms",
@@ -454,7 +504,6 @@ const LAYERS = [
  {id:"api", pos:"top", no:"Layer 2", name:"API ба интеграци|API & Integration",
   acc:"#5F45B8", tint:"#EFEBFB", edge:"#C3B6E8",
   items:[["API Gateway","REST ба GraphQL|REST and GraphQL"],
-         ["Service Mesh","Istio / Linkerd|Istio / Linkerd"],
          ["Webhook Endpoints","Эвент callback|Event callbacks"],
          ["Third-party Connectors","Вендор системийн API|Vendor system APIs"]]},
  {id:"int", pos:"top", no:"Layer 3", name:"Integration (TBG API)|Integration (TBG API)",
@@ -486,20 +535,52 @@ const LAYERS = [
   items:[["AWS DMS","Өгөгдлийн сангийн шилжүүлэлт|Database migration service"],
          ["Real-time Replication","Change data capture|Change data capture"],
          ["ETL Processes","Хуваарьт batch хөрвүүлэлт|Scheduled batch transforms"],
-         ["Data Lake","S3 ба AWS Glue|S3 plus AWS Glue"]]},
+         ["Data Lakehouse","Тодруулах|To be confirmed"]]},
  {id:"ops", pos:"bot", no:"Layer 6", name:"Ажиллагаа|Operations",
   acc:"#3F4C59", tint:"#EDF1F4", edge:"#BCC7D0",
-  items:[["Centralized Logging","ELK stack|ELK stack"],
+  items:[["Splunk","Централчилсан лог|Centralized logging"],
          ["Distributed Tracing","X-Ray ба Jaeger|X-Ray and Jaeger"],
          ["Alerting","Дуудлагын мэдэгдэл|On-call notification"],
-         ["Backup & Recovery","S3 Glacier түвшин|S3 Glacier tiers"],
+         ["Backup & Recovery","Зарим системд хэсэгчлэн|Partial — some systems only"],
          ["Disaster Recovery","Зайсан Нура DR — CDC|Zaisan Nura DR — CDC"]]}
 ];
 
 /* ============ багана / систем ============
-   MOVE_TGT — зорилтот төлөвт AWS руу нүүх санал (батлах шаардлагатай)   */
-const MOVE_TGT = ["Nura.mn", "MedOn", "Everest", "KEEP HRIS", "Baazshop POS", "Warehouse", "lifeon.mn"];
-const TGT_INTO_LIFE = ["Cookoo App"];
+   MOVE_TGT — зорилтот төлөвт AWS руу шилжих санал (батлах шаардлагатай)   */
+/* Нүүлгэлтийн төлөвлөгөө — зорилтот төлөв
+   kind : "move"  = AWS руу шилжинэ
+          "merge" = өөр систем дотор нэгдэж, өөрөө байхаа болино
+   from : одоогийн байршил
+   to   : хүрэх AWS account.  null = ТОДРУУЛААГҮЙ → UI шаргал өнгөөр тэмдэглэнэ
+   wave : шилжих хугацаа / долгион.  null = тодруулаагүй
+   Гүйцээх: to ба wave-г шийдвэр гармагц бөглөнө.                              */
+const MIGRATION = {
+  "Nura.mn":      { kind:"move",  from:"Нура ДЦ|Nura DC",  to:null, wave:null },
+  "MedOn":        { kind:"move",  from:"Нура ДЦ|Nura DC",  to:null, wave:null },
+  "Everest":      { kind:"move",  from:"Нура ДЦ|Nura DC",  to:null, wave:null },
+  "KEEP HRIS":    { kind:"move",  from:"Нура ДЦ|Nura DC",  to:null, wave:null },
+  "Baazshop POS": { kind:"move",  from:"Нура ДЦ|Nura DC",  to:null, wave:null },
+  "Warehouse":    { kind:"move",  from:"Нура ДЦ|Nura DC",  to:null, wave:null },
+  "lifeon.mn":    { kind:"move",  from:"Нура ДЦ|Nura DC",  to:null, wave:null },
+  "Cookoo App":   { kind:"merge", from:"Вендор|Vendor",    to:"TBGLife", wave:null }
+};
+/* Нүдний бодит статус — баталгаажуулсан зүйл л статусгүй үлдэнэ
+   "planned" = өнөөдөр байхгүй, төлөвлөж байгаа
+   "partial" = зарим систем/хэсэгт л хэрэгжсэн
+   "tbd"     = дэд бүтцийн багаар баталгаажаагүй
+   Гүйцээх: баталгаажсан нүдийг энэ жагсаалтаас хасна.               */
+const STATUS = {
+  "Data Lakehouse":      "planned",   // S3 зөвхөн PayOn дээр — lakehouse байхгүй
+  "Splunk":              "planned",   // ELK байгаагүй, Splunk нэвтрээгүй
+  "Backup & Recovery":   "partial",   // зарим системд хэсэгчлэн
+  "Disaster Recovery":   "tbd",
+  "AWS SQS / SNS":       "tbd",
+  "Event-Driven Flows":  "tbd",
+  "Distributed Tracing": "tbd"
+};
+
+const MOVE_TGT      = Object.keys(MIGRATION).filter(k => MIGRATION[k].kind === "move");
+const TGT_INTO_LIFE = Object.keys(MIGRATION).filter(k => MIGRATION[k].kind === "merge");
 
 
 /* ============ AWS Organization ============
@@ -535,7 +616,7 @@ const AWS_OTHER = [
   ["PHMongolia",         "Пицца Хат Монгол|Pizza Hut Mongolia"],
   ["Nura Payment Notif", "Төлбөрийн мэдэгдэл|Payment notification"],
   ["Nura Mongolia",      "Нура|Nura"],
-  ["Санхүүгийн түрээс",  "Лизинг · ТБ Тех|Leasing · TB Tech"]
+  ["Санхүүгийн түрээс",  "Лизинг|Leasing"]
 ];
 const FIN_APPS = [
   ["HES",   "Зээл|Lending"],
@@ -586,14 +667,13 @@ const STACK = {
   "Apache Kafka Cluster":"Apache Kafka",
   "AWS SQS / SNS":"AWS SQS · SNS",
   "AWS DMS":"AWS DMS",
-  "Data Lake":"Amazon S3 · AWS Glue",
-  "Centralized Logging":"Elasticsearch · Logstash · Kibana",
+  "Data Lakehouse":"",
+  "Splunk":"Splunk Enterprise",
   "Distributed Tracing":"AWS X-Ray · Jaeger",
-  "Service Mesh":"Istio / Linkerd",
   "DDoS Protection":"AWS Shield Advanced",
   "SSL / TLS Certificates":"AWS ACM · internal PKI",
   "Identity Provider":"SAML 2.0 · OIDC",
-  "Backup & Recovery":"Amazon S3 Glacier",
+  "Backup & Recovery":"",
   "AWS accounts (10)":"AWS Organizations"
 };
 
@@ -652,19 +732,19 @@ const API_META = {
 
 /* ============ холбоос ============ */
 const DEFAULT_LINKS = {
-  aws:["Identity Provider","API Gateway","Apache Kafka Cluster","AWS DMS","Centralized Logging"],
-  dc: ["Identity Provider","Service Mesh","Real-time Replication","Centralized Logging"],
+  aws:["Identity Provider","API Gateway","Apache Kafka Cluster","AWS DMS","Splunk"],
+  dc: ["Identity Provider","Real-time Replication","Splunk"],
   ven:["SSL / TLS Certificates","Third-party Connectors","Webhook Endpoints","ETL Processes","Alerting"]
 };
 
 const LINKS = {
-  "DTB Ecosystem Sync":["Odoo ERP v19","API Gateway","Apache Kafka Cluster","PayOn","Baazshop POS","Real-time Replication","Centralized Logging"],
-  "HES Integration":["HES","Odoo ERP v19","API Gateway","Service Mesh","Identity Provider","Alerting"],
+  "DTB Ecosystem Sync":["Odoo ERP v19","API Gateway","Apache Kafka Cluster","PayOn","Baazshop POS","Real-time Replication","Splunk"],
+  "HES Integration":["HES","Odoo ERP v19","API Gateway","Identity Provider","Alerting"],
   "Nura Middleware":["Nura.mn","Odoo ERP v19","API Gateway","Webhook Endpoints","Apache Kafka Cluster","SSL / TLS Certificates"],
   "TBG Life REST API":["TBG Life Mobile","TBG Life Web","Odoo ERP v19","API Gateway","Identity Provider","Distributed Tracing"],
-  "Helpdesk VoiceOn API":["Odoo ERP v19","API Gateway","Webhook Endpoints","Centralized Logging"],
+  "Helpdesk VoiceOn API":["Odoo ERP v19","API Gateway","Webhook Endpoints","Splunk"],
   "Social Facebook Lead":["Odoo ERP v19","Webhook Endpoints","API Gateway","SSL / TLS Certificates"],
-  "TBG VOIP":["Webhook Endpoints","Third-party Connectors","Alerting","Centralized Logging"],
+  "TBG VOIP":["Webhook Endpoints","Third-party Connectors","Alerting","Splunk"],
   "Payroll Export":["KEEP HRIS","Diamond fin","ETL Processes","Backup & Recovery","Odoo ERP v19"],
   "Helpdesk Portal":["Odoo ERP v19","Identity Provider","Web Application Firewall"],
   "Portal Approval":["Odoo ERP v19","Dynamic Workflow","Identity Provider","Web Application Firewall"],
@@ -672,10 +752,10 @@ const LINKS = {
   "Portal Penalty":["Odoo ERP v19","Identity Provider","Web Application Firewall"],
   "Online Jobs":["Odoo ERP v19","KEEP HRIS","Identity Provider","Web Application Firewall","DDoS Protection"],
   "Meta Review Pages":["SSL / TLS Certificates","DDoS Protection"],
-  "Dynamic Workflow":["Odoo ERP v19","HES Integration","Portal Approval","Alerting","Centralized Logging"],
+  "Dynamic Workflow":["Odoo ERP v19","HES Integration","Portal Approval","Alerting","Splunk"],
 
   "Odoo ERP v19":["API Gateway","Identity Provider","Apache Kafka Cluster","AWS DMS","Backup & Recovery","DTB Ecosystem Sync","Dynamic Workflow"],
-  "Odoo ERP v16":["Service Mesh","Real-time Replication","Identity Provider","Backup & Recovery"],
+  "Odoo ERP v16":["Real-time Replication","Identity Provider","Backup & Recovery"],
   "TBG Life Mobile":["TBG Life REST API","API Gateway","Web Application Firewall","Identity Provider","Distributed Tracing"],
   "TBG Life Web":["TBG Life REST API","API Gateway","DDoS Protection","SSL / TLS Certificates","Distributed Tracing"],
   "Baazshop POS":["DTB Ecosystem Sync","API Gateway","ETL Processes"],
@@ -684,22 +764,22 @@ const LINKS = {
   "Ultimate POS":["ETL Processes"],
   "Opera PMS":["Third-party Connectors","ETL Processes","SSL / TLS Certificates"],
   "Horicasoft PMS":["Third-party Connectors","ETL Processes"],
-  "HES":["HES Integration","Service Mesh","Real-time Replication","Identity Provider","Alerting"],
+  "HES":["HES Integration","Real-time Replication","Identity Provider","Alerting"],
   "PayOn":["DTB Ecosystem Sync","API Gateway","SSL / TLS Certificates","Web Application Firewall","Alerting"],
-  "MES":["Apache Kafka Cluster","Real-time Replication","Centralized Logging"],
+  "MES":["Apache Kafka Cluster","Real-time Replication","Splunk"],
   "Nura.mn":["Nura Middleware","Web Application Firewall","DDoS Protection","API Gateway","SSL / TLS Certificates"],
-  "admin.nura.mn":["Identity Provider","Web Application Firewall","Centralized Logging"],
+  "admin.nura.mn":["Identity Provider","Web Application Firewall","Splunk"],
   "Suntech website":["DDoS Protection","SSL / TLS Certificates"],
   "MedOn":["Identity Provider","API Gateway","SSL / TLS Certificates","Real-time Replication"],
   "lifeon.mn":["Identity Provider","API Gateway","Web Application Firewall","SSL / TLS Certificates"],
   "Санхүүгийн түрээс":["Odoo ERP v19","HES Integration","ETL Processes","Identity Provider"],
-  "DMS1":["Service Mesh","ETL Processes"],
-  "DMS2":["Service Mesh","ETL Processes"],
+  "DMS1":["ETL Processes"],
+  "DMS2":["ETL Processes"],
   "Warehouse":["Real-time Replication","ETL Processes"],
   "Diamond fin":["Payroll Export","ETL Processes","Real-time Replication","Backup & Recovery"],
   "KEEP HRIS":["Payroll Export","Online Jobs","ETL Processes","Identity Provider"],
-  "Everest":["Identity Provider","Service Mesh","Real-time Replication","Backup & Recovery"],
-  "SAP ERP":["Third-party Connectors","ETL Processes","Data Lake"],
+  "Everest":["Identity Provider","Real-time Replication","Backup & Recovery"],
+  "SAP ERP":["Third-party Connectors","ETL Processes","Data Lakehouse"],
   "GreenERP":["Third-party Connectors","ETL Processes"],
   "Odoo ERP v15":["Third-party Connectors","ETL Processes"],
   "Cookoo App":["Webhook Endpoints","API Gateway","SSL / TLS Certificates","TBG Life REST API"],
@@ -773,7 +853,7 @@ const APP_CO = {
   "Macromatix":{cur:["FOD"], tgt:["FOD"]},
   "MedOn":{cur:["TCH"], tgt:["NUR","TCH"]},
   "lifeon.mn":{cur:["TCH"], tgt:["TCH"]},
-  "Санхүүгийн түрээс":{cur:["TCH","FIN"], tgt:["TCH","FIN"]},
+  "Санхүүгийн түрээс":{cur:["FIN"], tgt:["NUR"]},
   "Micro POS":{cur:["PZA"], tgt:["PZA"]},
   "Nura.mn":{cur:[], tgt:["NUR"]},
   "Och 7.0":{cur:["INT"], tgt:["INT"]},
@@ -834,7 +914,7 @@ function mark(c){
   return m;
 }
 
-/* ---------- зорилтот төлөвийн нүүлгэлт ---------- */
+/* ---------- зорилтот төлөвийн шилжилт ---------- */
 const movedNow = () => state === "tgt" ? MOVE_TGT : [];
 const intoLifeNow = () => state === "tgt" ? TGT_INTO_LIFE : [];
 
@@ -855,7 +935,7 @@ function awsGroups(){
   });
   const mv = movedNow();
   if(mv.length){
-    g.push(["ДЦ-ээс нүүх — account тодруулах|Migrating from DC — account to confirm",
+    g.push(["ДЦ-ээс шилжих|Migrating from DC",
       mv.map(n => {
         const r = DC_APPS.find(a => a[0] === n);
         return [n, r ? r[1] : "—|—"];
@@ -879,12 +959,27 @@ function node(name, note, plat, group, acc, wide, nocount){
   b.className = "node" + (wide ? " wide" : "");
   b.style.setProperty("--acc", acc);
   b.innerHTML = "<b></b><small></small><span class='co'></span>" +
-                "<span class='off'></span><span class='mv'>&#8594;AWS</span>";
+                "<span class='off'></span><span class='stt'></span><span class='mv'>&#8594;AWS</span>";
   b.querySelector("b").textContent = name;
   b.querySelector("small").textContent = L2(note);
   b.querySelector(".off").textContent = T("n_off");
   b.dataset.plat = plat; b.dataset.name = name; b.dataset.group = L2(group);
-  if(MOVE_TGT.includes(name)) b.classList.add("moved");
+  const ST = STATUS[name];
+  if(ST){
+    b.classList.add("st-" + ST);
+    b.querySelector(".stt").textContent = T("st_" + ST);
+  }
+  const MG = MIGRATION[name];
+  if(MG){
+    b.classList.add("moved");
+    if(MG.kind === "merge"){
+      b.classList.add("merged");
+      b.querySelector(".mv").textContent = "\u21E2 " + MG.to;
+    } else {
+      b.querySelector(".mv").textContent = "\u2192 " + (MG.to || "AWS");
+    }
+    b.dataset.mig = L2(MG.from) + " \u2192 " + (MG.to || "AWS");
+  }
   const M = API_META[name];
   if(M){
     b.dataset.tech = M.tech;
@@ -1145,7 +1240,14 @@ function select(name, scroll){
   if(plat === "aws" && AWS_ACCOUNTS.some(x => x[0] === el.dataset.group)){
     metaRow(mb, T("d_acct"), el.dataset.group);
   }
-  if(MOVE_TGT.includes(name)) metaRow(mb, T("d_moving"), T("d_move_v"));
+  const STs = STATUS[name];
+  if(STs) metaRow(mb, T("d_status"), T("st_" + STs), STs === "planned" ? "tbd" : "tbd");
+  const MGs = MIGRATION[name];
+  if(MGs){
+    metaRow(mb, T("d_mig"), L2(MGs.from) + " \u2192 " + (MGs.to || "AWS"));
+    metaRow(mb, T("d_migkind"), T(MGs.kind === "merge" ? "mg_merge" : "mg_move"));
+    if(MGs.wave) metaRow(mb, T("d_wave"), MGs.wave);
+  }
   if(M){
     const pr = document.createElement("div");
     pr.innerHTML = "<span></span>";
